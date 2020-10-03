@@ -16,7 +16,9 @@ or type `zebark` where you want to generate the words
 
 or
 
-`zebark` generates default 200 words
+`zebark` generates sentence with 5-15 random words
+
+`zebarkpara` generates random paragraph
 
 `zebark15` generates 15 words
 

@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 
 const command = 'zebark';
+const command2 = 'zebarkpara';
 const regexp = new RegExp(`(${command}([^\sa-zA-Z]*))`, 'gis');
 const text = "እንጂ ብጠይቅ እሱ እሷ ወጣቶቹ ምድር ኢትዮጵያ ሌላውን ለሱሪ እና ወይም ቀይሮ መጠቀም መብላት ይቻላል ቃላቶች በዘፈቀደ ውድ ጎበዝ ገሰገሰ የጋሪው ዕቅድ ግጥም በጊዜ የኩሬውን በምስራቅ አጠናቀቁ አጠናቀቁ በጠዋቱ የተሳካለት መተግበሪያ እንደ እኔ ታታሪ ለገላገሉት ሲሻገር መመልከት ተረት ለሚገኙ ከእትዬ የፈጠራን እየቀደመን ችሎታ መጸሐፍ መቋረጥ ምስጥርን ትክክል ጎሮምሳ እንደኛው ቅኔዎቹ በመስኮት ነጥቡ በረረ";
 const inital = "ዘባርቅ";
@@ -8,36 +9,55 @@ const endSymbols = "።!?";
 
 export function activate(context: vscode.ExtensionContext) {
 
-	const insertText = (length: any) => {
+	const insertText = (length: any, type: string) => {
 		let editor: any = vscode.window.activeTextEditor;
 		editor.edit((edit: any) =>
 			editor.selections.forEach((selection: any) => {
 				edit.delete(selection);
-				edit.insert(selection.start, zebark(length));
+				edit.insert(selection.start, zebark(length, type));
 			})
 		);
 	};
 
-	const zebark = (length: any) => {
+	const zebark = (length: any, type: string) => {
 		let result: string = "";
 		if (!length) {
-			length = 200;
+			length = Math.floor(Math.random() * (15 - 5) + 5);
 		}
-		let words = text.split(" ");
 
-		result += inital + " ";
+		if (type === 'para') {
+			result += inital + buildParagraph(length);
+		} else {
+			result += inital + buildSentence(length);
+		}
+
+		return result;
+	};
+
+	const buildParagraph = (length: any) => {
+		let paragraph: string = "";
+
+		for (let i = 0; i < length; i++) {
+			paragraph += buildSentence(Math.floor(Math.random() * (15 - 5) + 5));
+		}
+
+		return paragraph;
+	};
+
+	const buildSentence = (length: any) => {
+		let sentence: string = " ";
+
+		let words = text.split(" ");
 
 		let end = " ";
 		for (let i = 0; i < length - 1; i++) {
 			if (i === length - 2) {
 				end = endSymbols.split("")[Math.floor(Math.random() * endSymbols.length)];
 			}
-			result += words[Math.floor(Math.random() * (words.length - 1))] + end;
-
+			sentence += words[Math.floor(Math.random() * (words.length - 1))] + end;
 		}
-		return result;
+		return sentence;
 	};
-
 
 	const extractNumber = (
 		document: vscode.TextDocument,
@@ -71,12 +91,31 @@ export function activate(context: vscode.ExtensionContext) {
 			const cmd = new vscode.CompletionItem(command);
 
 			cmd.insertText = new vscode.SnippetString(
-				zebark(wordCount)
+				zebark(wordCount, '')
 			);
 
 			cmd.label = `${command}${wordCount || ''}`;
 
-			cmd.documentation = new vscode.MarkdownString("መዘባረቅ generate random amharic words.");
+			cmd.documentation = new vscode.MarkdownString("መዘባረቅ generate random amharic sentence.");
+
+			return [cmd];
+		}
+	},
+		"1", "2", "3", "4", "5", "6", "7", "8", "9", "0");
+
+	// trigger zebark through autocomplete
+	const autoCompletePara = vscode.languages.registerCompletionItemProvider("*", {
+		provideCompletionItems(
+		) {
+			const cmd = new vscode.CompletionItem(command2);
+
+			cmd.insertText = new vscode.SnippetString(
+				zebark(0, 'para')
+			);
+
+			cmd.label = `${command2}`;
+
+			cmd.documentation = new vscode.MarkdownString("መዘባረቅ generate random amharic paragraph.");
 
 			return [cmd];
 		}
@@ -85,13 +124,21 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// trigger zebark through command palette
 	let disposable = vscode.commands.registerCommand(
-		"zebark.jemir",
+		"zebark.zebark",
 		() => {
-			insertText(0);
+			insertText(0, '');
+		}
+	);
+	
+	// trigger zebark through command palette
+	let disposablePara = vscode.commands.registerCommand(
+		"zebarkpara.zebark",
+		() => {
+			insertText(0, 'para');
 		}
 	);
 
-	context.subscriptions.push(autoComplete, disposable);
+	context.subscriptions.push(autoComplete, autoCompletePara, disposable, disposablePara);
 }
 
 // this method is called when your extension is deactivated

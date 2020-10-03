@@ -27,9 +27,13 @@
   "contributes": {
     "commands": [
       {
-        "command": "zebark.jemir",
-        "title": "zebark"
-      }
+				"command": "zebark.zebark",
+				"title": "zebark: Generate random amharic sentence."
+			},
+			{
+				"command": "zebarkpara.zebark",
+				"title": "zebark: Generate random amharic paragraph."
+			}
     ]
   },
   "scripts": {
